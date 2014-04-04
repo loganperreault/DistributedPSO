@@ -5,9 +5,9 @@ import java.util.List;
 
 public class PSO {
 	
-	protected static double momentum = 0.2;
-	public static double cognitiveInfluence = 0.5;
-	public static double socialInfluence = 0.5;
+	protected static double momentum = 0.9;
+	public static double cognitiveInfluence = 2.5;
+	public static double socialInfluence = 0.1;
 	Fitness fitnessEvaluation;
 	public static Particle globalBest;
 	double avgFitness, globalBestFitness = 0.0;
@@ -15,9 +15,9 @@ public class PSO {
 	public List<Particle> particles = new ArrayList<>();
 	int particleDimension = 2;
 	
-	public PSO(int swarmSize, double minValue, double maxValue, Fitness fitnessEvaluation) {
+	public PSO(int swarmSize, double minValue, double maxValue, double maxSpeed, Fitness fitnessEvaluation) {
 		for (int i = 0; i < swarmSize; i++)
-			particles.add(new Particle(particleDimension, minValue, maxValue));
+			particles.add(new Particle(particleDimension, minValue, maxValue, maxSpeed));
 		this.fitnessEvaluation = fitnessEvaluation;
 		globalBest = particles.get(0);
 	}
@@ -40,6 +40,7 @@ public class PSO {
 				globalBestFitness = fitness;
 				globalBest = particle;
 			}
+			particle.setFitness(fitness);
 			avgFitness += fitness;
 			minFitness = Math.min(fitness, minFitness);
 		}
@@ -50,11 +51,13 @@ public class PSO {
 				range, 
 				avgFitness,
 				globalBestFitness);
+		System.out.println(globalBest.getBestPosition());
 	}
 	
 	public void runIteration() {
 		for (Particle particle : particles) {
 			particle.runIteration();
+			evaluateParticles();
 		}
 	}
 

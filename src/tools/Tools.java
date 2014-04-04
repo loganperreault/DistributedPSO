@@ -47,4 +47,21 @@ public class Tools {
 		return (int)Math.round(value);
 	}
 	
+	public static double euclidean(double[] vector1, double[] vector2) {
+		double distance = 0.0;
+		verifyLengths(vector1, vector2);
+		for (int i = 0; i < vector1.length; i++) {
+			distance += Math.pow(vector1[i] - vector2[i], 2);
+		}
+		distance = Math.sqrt(distance);
+		return distance;
+	}
+	
+	public static void verifyLengths(double[] vector1, double[] vector2) {
+		if (vector1.length != vector2.length) {
+			System.out.println("ERROR: Vector lengths must match");
+			System.exit(1);
+		}
+	}
+	
 }

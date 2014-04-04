@@ -1,10 +1,10 @@
 package driver;
 
-import problem.Area;
+import problem.Room;
 import problem.Target;
 import pso.Fitness;
+import pso.FitnessTarget;
 import pso.PSO;
-import visualizer.Visualize;
 
 public class Driver {
 
@@ -13,21 +13,26 @@ public class Driver {
 	 */
 	public static void main(String[] args) {
 		
-		int numRobots = 5;
-		double minValue = 0;
-		double maxValue = 100;
+		// TODO: remove global knowledge from particles
+		// TODO: clamp search area
+		// TODO: write server code
+		// TODO: write communication-based velocity update
+		
+		int numRobots = 8;
+		double roomSize = 100;
+		double maxSpeed = 1.0;
 		
 		Target target = new Target(15, 50);
 		
-		Area area = new Area((maxValue - minValue));
+		Room area = new Room(roomSize);
 		
-		Fitness fitnessEvaluation = new Fitness(area);
-		PSO swarm = new PSO(numRobots, minValue, maxValue, fitnessEvaluation);
+		Fitness fitnessEvaluation = new FitnessTarget(area, target);
+		PSO swarm = new PSO(numRobots, 0, roomSize, maxSpeed, fitnessEvaluation);
 		
 		area.addSwarm(swarm);
 		area.addTarget(target);
 		
-		area.runIterations(10);
+		area.runIterations(1000);
 	}
 
 }

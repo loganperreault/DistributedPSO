@@ -1,23 +1,15 @@
 package pso;
 
-import problem.Area;
+import problem.Room;
 
-public class Fitness {
+public abstract class Fitness {
 	
-	Area area;
+	Room area;
 	
-	public Fitness(Area area) {
+	public Fitness(Room area) {
 		this.area = area;
 	}
 	
-	public double evaluate(Particle particle) {
-		
-		double fitness = 0.0;
-		
-		// TODO: measure particle's distance from a target
-		
-		return fitness;
-		
-	}
+	public abstract double evaluate(Particle particle);
 
 }

@@ -9,6 +9,8 @@ public class Particle {
 	int size;
 	double[] position, velocity, personalBestPosition;
 	private double personalBestFitness;
+	private double maxSpeed;
+	private double minValue, maxValue;
 
 	/**
 	 * Create a new particle 
@@ -17,15 +19,20 @@ public class Particle {
 	 * @param minValue	The minimum value accessible by the particle.
 	 * @param maxValue	The maximum value accessible by the particle.
 	 */
-	public Particle(int size, double minValue, double maxValue) {
+	public Particle(int size, double minValue, double maxValue, double maxSpeed) {
 		this.size = size;
+		this.maxSpeed = maxSpeed;
+		this.minValue = minValue;
+		this.maxValue = maxValue;
 		position = new double[size];
 		velocity = new double[size];
 		for (int i = 0; i < size; i++) {
 			position[i] = Tools.getRandomDouble(minValue, maxValue);
-			velocity[i] = Tools.getRandomDouble(minValue/10, maxValue/10);
+			velocity[i] = Tools.getRandomDouble(minValue/100, maxValue/100);
 		}
-		personalBestPosition = position;
+		personalBestPosition = new double[position.length];
+		for (int i = 0; i < position.length; i++)
+			personalBestPosition[i] = position[i];
 	}
 	
 	public void runIteration() {
@@ -37,8 +44,18 @@ public class Particle {
 	}
 	
 	private void move() {
-		for (int i = 0; i < size; i++)
+		double margin = 2;
+		for (int i = 0; i < size; i++) {
 			position[i] += velocity[i];
+			if (position[i] < minValue) {
+				position[i] = minValue + margin;
+				velocity[i] *= -0.5;
+			}
+			if (position[i] > maxValue - margin) {
+				position[i] = maxValue - margin*2;
+				velocity[i] *= -0.5;
+			}
+		}
 	}
 	
 	private void velocityUpdate() {
@@ -46,14 +63,21 @@ public class Particle {
 		for (int i = 0; i < velocity.length; i++) {
 			double term1 = PSO.momentum * velocity[i];
 			double term2 = Tools.getRandomDouble(0, PSO.cognitiveInfluence) * (personalBestPosition[i] - position[i]);
-			double term3 = Tools.getRandomDouble(0, PSO.socialInfluence) * (PSO.globalBest.personalBestPosition[i] - position[i]);;
+			double term3 = Tools.getRandomDouble(0, PSO.socialInfluence) * (PSO.globalBest.personalBestPosition[i] - position[i]);
 			double update = term1 + term2 + term3;
 			velocity[i] += update;
+			clampSpeed();
 		}
 	}
 	
 	private void velocityUpdateExtended() {
 		
+	}
+	
+	private void clampSpeed() {
+		for (int i = 0; i < velocity.length; i++) {
+			velocity[i] = Math.max(Math.min(velocity[i], maxSpeed), -maxSpeed);
+		}
 	}
 	
 	public String toString() {
@@ -67,6 +91,20 @@ public class Particle {
 		return str;
 	}
 	
+	public void printPosition() {
+		System.out.println(this);
+	}
+	
+	public void printVelocity() {
+		System.out.print("[");
+		for (int i = 0; i < position.length; i++) {
+			if (i > 0)
+				System.out.print(",");
+			System.out.print(velocity[i]);
+		}
+		System.out.println("]");
+	}
+	
 	public double getPosition(int i) {
 		return position[i];
 	}
@@ -78,14 +116,14 @@ public class Particle {
 	public void setFitness(double fitness) {
 		if (fitness > personalBestFitness) {
 			personalBestFitness = fitness;
-			personalBestPosition = position;
+			System.out.println("RESET BEST POSITION");
+			for (int i = 0; i < position.length; i++)
+				personalBestPosition[i] = position[i];
 		}
 	}
 	
-	// TODO: remove
-	public void setPosition(int x, int y) {
-		position[0] = x;
-		position[1] = y;
+	public String getBestPosition() {
+		return "["+personalBestPosition[0]+","+personalBestPosition[1]+"]";
 	}
 
 }

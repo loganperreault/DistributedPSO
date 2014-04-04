@@ -12,7 +12,7 @@ import tools.Tools;
 import visualizer.Node;
 import visualizer.Visualize;
 
-public class Area {
+public class Room {
 	
 	double width, height;
 	List<Target> targets = new ArrayList<>();
@@ -23,16 +23,16 @@ public class Area {
 	Map<Target, Node> targetMap = new HashMap<>();
 	int timestep = 0;
 	boolean draw = true;
-	int pause = 1000;
+	int pause = 100;
 	
-	public Area(double size) {
+	public Room(double size) {
 		initializeArea(size);
 	}
 	
 	private void initializeArea(double size) {
 		this.width = size;
 		this.height = size;
-		vis = new Visualize("Area", (int)width, (int)height);
+		vis = new Visualize("Area", Tools.toInt(width), Tools.toInt(height));
 		vis.setScale(visualizerSize/size);
 		vis.draw();
 	}
@@ -74,7 +74,7 @@ public class Area {
 	}
 	
 	private void updateArea() {
-		System.out.println(swarm.get(0));
+		//swarm.get(0).printVelocity();
 		for (Particle particle : swarm.particles) {
 			Node node = particleMap.get(particle);
 			node.setPosition(Tools.toInt(particle.getPosition(0)), Tools.toInt(particle.getPosition(1)));
