@@ -53,9 +53,14 @@ public class Room {
 			System.exit(1);
 		}
 		targets.add(target);
-		Node node = new Node(target.x, target.y, 3, Color.RED);
+		Node node = new Node(target.x, target.y, 3, target.color);
 		targetMap.put(target, node);
 		vis.addNode(node);
+	}
+	
+	public void addTargets(List<Target> targets) {
+		for (Target target : targets)
+			addTarget(target);
 	}
 	
 	public void runIterations(int timesteps) {

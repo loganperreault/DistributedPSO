@@ -11,6 +11,7 @@ public class PSO {
 	Fitness fitnessEvaluation;
 	public static Particle globalBest;
 	double avgFitness, globalBestFitness = 0.0;
+	double communicationRange = 10.0;
 	
 	public List<Particle> particles = new ArrayList<>();
 	int particleDimension = 2;
@@ -40,7 +41,7 @@ public class PSO {
 				globalBestFitness = fitness;
 				globalBest = particle;
 			}
-			particle.setFitness(fitness);
+			particle.updatePersonalBestPosition(fitness);
 			avgFitness += fitness;
 			minFitness = Math.min(fitness, minFitness);
 		}

@@ -7,8 +7,8 @@ public class Particle {
 	
 	boolean extended = false;
 	int size;
-	double[] position, velocity, personalBestPosition;
-	private double personalBestFitness;
+	double[] position, velocity, personalBestPosition, globalBestPosition;
+	private double personalBestFitness, globalBestFitness;
 	private double maxSpeed;
 	private double minValue, maxValue;
 
@@ -31,8 +31,11 @@ public class Particle {
 			velocity[i] = Tools.getRandomDouble(minValue/100, maxValue/100);
 		}
 		personalBestPosition = new double[position.length];
-		for (int i = 0; i < position.length; i++)
+		globalBestPosition = new double[position.length];
+		for (int i = 0; i < position.length; i++) {
 			personalBestPosition[i] = position[i];
+			globalBestPosition[i] = position[i];
+		}
 	}
 	
 	public void runIteration() {
@@ -63,7 +66,7 @@ public class Particle {
 		for (int i = 0; i < velocity.length; i++) {
 			double term1 = PSO.momentum * velocity[i];
 			double term2 = Tools.getRandomDouble(0, PSO.cognitiveInfluence) * (personalBestPosition[i] - position[i]);
-			double term3 = Tools.getRandomDouble(0, PSO.socialInfluence) * (PSO.globalBest.personalBestPosition[i] - position[i]);
+			double term3 = Tools.getRandomDouble(0, PSO.socialInfluence) * (globalBestPosition[i] - position[i]);
 			double update = term1 + term2 + term3;
 			velocity[i] += update;
 			clampSpeed();
@@ -113,17 +116,24 @@ public class Particle {
 		return velocity[i];
 	}
 	
-	public void setFitness(double fitness) {
+	public String getBestPosition() {
+		return "["+personalBestPosition[0]+","+personalBestPosition[1]+"]";
+	}
+	
+	public void updatePersonalBestPosition(double fitness) {
 		if (fitness > personalBestFitness) {
 			personalBestFitness = fitness;
-			System.out.println("RESET BEST POSITION");
 			for (int i = 0; i < position.length; i++)
 				personalBestPosition[i] = position[i];
 		}
 	}
 	
-	public String getBestPosition() {
-		return "["+personalBestPosition[0]+","+personalBestPosition[1]+"]";
+	public void updateGlobalBestPosition(double[] globalPosition, double fitness) {
+		if (fitness > globalBestFitness) {
+			globalBestFitness = fitness;
+			for (int i = 0; i < globalPosition.length; i++)
+				personalBestPosition[i] = globalPosition[i];
+		}
 	}
 
 }
