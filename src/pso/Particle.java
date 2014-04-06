@@ -5,12 +5,15 @@ import tools.Tools;
 
 public class Particle {
 	
-	boolean extended = false;
+	boolean extended = true;
 	int size;
-	double[] position, velocity, personalBestPosition, globalBestPosition;
-	private double personalBestFitness, globalBestFitness;
+	double[] position, velocity, personalBestPosition, globalBestPosition, communicationPersonalBestPosition, communicationGlobalBestPosition;
+	private double personalBestFitness, globalBestFitness, communicationPersonalBestFitness, communicationGlobalBestFitness;
 	private double maxSpeed;
 	private double minValue, maxValue;
+	private int timestep = 0;
+	private int lastCommunicationTimestep = 0;
+	public double communicationRange = 30;
 
 	/**
 	 * Create a new particle 
@@ -32,15 +35,14 @@ public class Particle {
 		}
 		personalBestPosition = new double[position.length];
 		globalBestPosition = new double[position.length];
+		communicationPersonalBestPosition = new double[position.length];
+		communicationGlobalBestPosition = new double[position.length];
 		setRandom();
-		/*
-		for (int i = 0; i < position.length; i++) {
-			personalBestPosition[i] = position[i];
-			globalBestPosition[i] = position[i];
-		}
-		*/
 	}
 	
+	/**
+	 * Sets best locations to random positions for exploration if no reward has been found yet
+	 */
 	private void setRandom() {
 		if (personalBestFitness == 0) {
 			for (int i = 0; i < position.length; i++) {
@@ -52,9 +54,20 @@ public class Particle {
 				globalBestPosition[i] = Tools.getRandomDouble(minValue, maxValue);
 			}
 		}
+		if (communicationPersonalBestFitness == 0) {
+			for (int i = 0; i < position.length; i++) {
+				communicationPersonalBestPosition[i] = Tools.getRandomDouble(minValue, maxValue);
+			}
+		}
+		if (communicationGlobalBestFitness == 0) {
+			for (int i = 0; i < position.length; i++) {
+				communicationGlobalBestPosition[i] = Tools.getRandomDouble(minValue, maxValue);
+			}
+		}
 	}
 	
 	public void runIteration() {
+		timestep++;
 		setRandom();
 		if (extended)
 			velocityUpdateExtended();
@@ -81,17 +94,34 @@ public class Particle {
 	private void velocityUpdate() {
 		// for each component in the vectors
 		for (int i = 0; i < velocity.length; i++) {
-			double term1 = PSO.momentum * velocity[i];
-			double term2 = Tools.getRandomDouble(0, PSO.cognitiveInfluence) * (personalBestPosition[i] - position[i]);
-			double term3 = Tools.getRandomDouble(0, PSO.socialInfluence) * (globalBestPosition[i] - position[i]);
-			double update = term1 + term2 + term3;
+			double momentum = PSO.momentum * velocity[i];
+			double update = momentum + goal(i);
 			velocity[i] += update;
 			clampSpeed();
 		}
 	}
 	
 	private void velocityUpdateExtended() {
-		
+		// for each component in the vectors
+		double communicationWeight = ((timestep - lastCommunicationTimestep) / PSO.targetCommunicationSteps);
+		for (int i = 0; i < velocity.length; i++) {
+			double momentum = PSO.momentum * velocity[i];
+			double goal = goal(i);
+			double communication = communication(i);
+			double update = momentum + (1 - communicationWeight) * goal + communicationWeight * communication;
+			velocity[i] += update;
+			clampSpeed();
+		}
+	}
+	
+	public double goal(int index) {
+		double cognitive = Tools.getRandomDouble(0, PSO.cognitiveInfluence) * (personalBestPosition[index] - position[index]);
+		double social = Tools.getRandomDouble(0, PSO.socialInfluence) * (globalBestPosition[index] - position[index]);
+		return cognitive + social;
+	}
+	
+	public double communication(int index) {
+		return 0.0;
 	}
 	
 	private void clampSpeed() {
@@ -157,6 +187,36 @@ public class Particle {
 		}
 	}
 	
+	public void serverUpdate(double[] globalPosition, double newFitness) {
+		if (newFitness >= globalBestFitness) {
+			lastCommunicationTimestep = timestep;
+			if (newFitness > globalBestFitness) {
+				globalBestFitness = newFitness;
+				for (int i = 0; i < globalPosition.length; i++)
+					globalBestPosition[i] = globalPosition[i];
+			}
+		}
+	}
+	
+	public void updateCommunicationPersonalBestPosition(double newFitness) {
+		if (newFitness > 0) {
+			lastCommunicationTimestep = timestep;
+			if (newFitness > communicationPersonalBestFitness) {
+				communicationPersonalBestFitness = newFitness;
+				for (int i = 0; i < position.length; i++)
+					communicationPersonalBestPosition[i] = position[i];
+			}
+		}
+	}
+	
+	public void updateCommunicationGlobalBestPosition(double[] communicationPosition, double newFitness) {
+		if (newFitness > communicationGlobalBestFitness) {
+			communicationGlobalBestFitness = newFitness;
+			for (int i = 0; i < communicationPosition.length; i++)
+				communicationGlobalBestPosition[i] = communicationPosition[i];
+		}
+	}
+	
 	public double getPersonalBestFitness() {
 		return personalBestFitness;
 	}
@@ -171,6 +231,22 @@ public class Particle {
 	
 	public double[] getGlobalBestPosition() {
 		return globalBestPosition;
+	}
+	
+	public double getCommunicationPersonalBestFitness() {
+		return communicationPersonalBestFitness;
+	}
+	
+	public double[] getCommunicationPersonalBestPosition() {
+		return communicationPersonalBestPosition;
+	}
+	
+	public double getCommunicationGlobalBestFitness() {
+		return communicationGlobalBestFitness;
+	}
+	
+	public double[] getCommunicationGlobalBestPosition() {
+		return communicationGlobalBestPosition;
 	}
 
 }

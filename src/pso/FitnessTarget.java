@@ -19,7 +19,8 @@ public class FitnessTarget extends Fitness {
 	
 	public FitnessTarget(Room room, Target target) {
 		super(room);
-		this.targets = new ArrayList<>();
+		if (this.targets == null)
+			this.targets = new ArrayList<>();
 		targets.add(target);
 	}
 	

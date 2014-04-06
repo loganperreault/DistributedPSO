@@ -16,11 +16,13 @@ public class Room {
 	
 	double width, height;
 	List<Target> targets = new ArrayList<>();
+	List<Server> servers = new ArrayList<>();
 	PSO swarm;
 	Visualize vis;
 	int visualizerSize = 800;
 	Map<Particle, Node> particleMap = new HashMap<>();
 	Map<Target, Node> targetMap = new HashMap<>();
+	Map<Server, Node> serverMap = new HashMap<>();
 	int timestep = 0;
 	boolean draw = true;
 	int pause = 100;
@@ -61,6 +63,23 @@ public class Room {
 	public void addTargets(List<Target> targets) {
 		for (Target target : targets)
 			addTarget(target);
+	}
+	
+	public void addServer(Server server) {
+		if (server.x > width || server.x < 0 ||
+			server.y > height || server.y < 0) {
+			System.out.println("ERROR: Server is out of bounds");
+			System.exit(1);
+		}
+		servers.add(server);
+		Node node = new Node(server.x, server.y, 3, server.color);
+		serverMap.put(server, node);
+		vis.addNode(node);
+	}
+	
+	public void addServer(List<Server> servers) {
+		for (Server server : servers)
+			addServer(server);
 	}
 	
 	public void runIterations(int timesteps) {

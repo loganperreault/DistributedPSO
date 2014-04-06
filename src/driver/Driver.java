@@ -1,12 +1,13 @@
 package driver;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
 import problem.Room;
+import problem.Server;
 import problem.Target;
 import pso.Fitness;
+import pso.FitnessCommunication;
 import pso.FitnessTarget;
 import pso.PSO;
 import tools.Tools;
@@ -16,7 +17,7 @@ public class Driver {
 	static int numRobots = 8;
 	static double roomSize = 100;
 	static double maxSpeed = 1.0;
-
+	
 	/**
 	 * @param args
 	 */
@@ -29,14 +30,19 @@ public class Driver {
 		// TODO: write communication-based velocity update
 		
 		List<Target> targets = getTargets();
+		Server server = new Server(90, 10);
 		
 		Room room = new Room(roomSize);
 		
 		Fitness fitnessEvaluation = new FitnessTarget(room, targets);
-		PSO swarm = new PSO(numRobots, 0, roomSize, maxSpeed, fitnessEvaluation);
+		Fitness communicationEvaluation = new FitnessCommunication(room, server);
+		PSO swarm = new PSO(numRobots, 0, roomSize, maxSpeed, fitnessEvaluation, communicationEvaluation);
+		
+		server.addSwarm(swarm);
 		
 		room.addSwarm(swarm);
 		room.addTargets(targets);
+		room.addServer(server);
 		
 		room.runIterations(1000);
 	}

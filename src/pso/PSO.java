@@ -11,17 +11,19 @@ public class PSO {
 	public static double cognitiveInfluence = 2.5;
 	public static double socialInfluence = 0.1;
 	Fitness fitnessEvaluation;
+	Fitness communicationEvaluation;
 	public static Particle globalBestParticle;
 	double avgFitness, globalBestFitness = 0.0;
-	double communicationRange = 800;
+	public static int targetCommunicationSteps = 50;
 	
 	public List<Particle> particles = new ArrayList<>();
 	int particleDimension = 2;
 	
-	public PSO(int swarmSize, double minValue, double maxValue, double maxSpeed, Fitness fitnessEvaluation) {
+	public PSO(int swarmSize, double minValue, double maxValue, double maxSpeed, Fitness fitnessEvaluation, Fitness communicationEvaluation) {
 		for (int i = 0; i < swarmSize; i++)
 			particles.add(new Particle(particleDimension, minValue, maxValue, maxSpeed));
 		this.fitnessEvaluation = fitnessEvaluation;
+		this.communicationEvaluation = communicationEvaluation;
 		globalBestParticle = particles.get(0);
 	}
 	
@@ -34,11 +36,16 @@ public class PSO {
 	}
 	
 	public void evaluateParticles() {
-		// evaluate all particles and update personal fitnesses
+		
 		for (Particle particle : particles) {
+			// evaluate all particles and update personal fitnesses
 			double fitness = fitnessEvaluation.evaluate(particle);
 			particle.updatePersonalBestPosition(fitness);
 			particle.updateGlobalBestPosition(particle.position, fitness);
+			// evaluate all particles and update personal communication fitnesses
+			double communication = communicationEvaluation.evaluate(particle);
+			particle.updateCommunicationPersonalBestPosition(communication);
+			particle.updateCommunicationGlobalBestPosition(particle.position, communication);
 		}
 		
 		// find the best position anyone knows about within communication range for each particle
@@ -61,7 +68,7 @@ public class PSO {
 		List<Particle> neighbors = new ArrayList<>();
 		for (Particle p : particles) {
 			double distance = Tools.euclidean(particle.position, p.position);
-			if (distance < communicationRange && p != particle)
+			if (distance < particle.communicationRange && p != particle)
 				neighbors.add(p);
 		}
 		return neighbors;
