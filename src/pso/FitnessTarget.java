@@ -10,6 +10,7 @@ import tools.Tools;
 public class FitnessTarget extends Fitness {
 	
 	List<Target> targets;
+	double threshold = 1;
 	
 	public FitnessTarget(Room room, List<Target> targets) {
 		super(room);
@@ -28,6 +29,8 @@ public class FitnessTarget extends Fitness {
 			double distance = Tools.euclidean(particle.position, target.position());
 			intensity += target.getIntensity() / Math.pow(distance, 2);
 		}
+		if (intensity < threshold)
+			intensity = 0;
 		return intensity;
 	}
 

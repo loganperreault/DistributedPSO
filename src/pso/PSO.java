@@ -3,15 +3,17 @@ package pso;
 import java.util.ArrayList;
 import java.util.List;
 
+import tools.Tools;
+
 public class PSO {
 	
 	protected static double momentum = 0.9;
 	public static double cognitiveInfluence = 2.5;
 	public static double socialInfluence = 0.1;
 	Fitness fitnessEvaluation;
-	public static Particle globalBest;
+	public static Particle globalBestParticle;
 	double avgFitness, globalBestFitness = 0.0;
-	double communicationRange = 10.0;
+	double communicationRange = 800;
 	
 	public List<Particle> particles = new ArrayList<>();
 	int particleDimension = 2;
@@ -20,7 +22,7 @@ public class PSO {
 		for (int i = 0; i < swarmSize; i++)
 			particles.add(new Particle(particleDimension, minValue, maxValue, maxSpeed));
 		this.fitnessEvaluation = fitnessEvaluation;
-		globalBest = particles.get(0);
+		globalBestParticle = particles.get(0);
 	}
 	
 	public Particle get(int i) {
@@ -32,27 +34,37 @@ public class PSO {
 	}
 	
 	public void evaluateParticles() {
-		// evaluate all particles
-		double minFitness = Double.MAX_VALUE;
-		double avgFitness = 0.0;
+		// evaluate all particles and update personal fitnesses
 		for (Particle particle : particles) {
 			double fitness = fitnessEvaluation.evaluate(particle);
-			if (fitness > globalBestFitness) {
-				globalBestFitness = fitness;
-				globalBest = particle;
-			}
 			particle.updatePersonalBestPosition(fitness);
-			avgFitness += fitness;
-			minFitness = Math.min(fitness, minFitness);
+			particle.updateGlobalBestPosition(particle.position, fitness);
 		}
-		avgFitness /= particles.size();
-		double range = globalBestFitness - minFitness;
-		//System.out.format("FITNESS: (%10f , %10f)   %f\n", minFitness, globalBestFitness, avgFitness);
-		System.out.format("RANGE: %10f    AVG: %10f    BEST: %10f\n", 
-				range, 
-				avgFitness,
-				globalBestFitness);
-		System.out.println(globalBest.getBestPosition());
+		
+		// find the best position anyone knows about within communication range for each particle
+		for (Particle particle : particles) {
+			globalBestFitness = particle.getGlobalBestFitness();
+			globalBestParticle = particle;
+			List<Particle> neighbors = getNeighbors(particle);
+			//System.out.println(neighbors.size());
+			for (Particle neighbor : neighbors) {
+				if (neighbor.getGlobalBestFitness() > globalBestFitness) {
+					globalBestFitness = neighbor.getGlobalBestFitness();
+					globalBestParticle = neighbor;
+				}
+			}
+			particle.updateGlobalBestPosition(globalBestParticle.getGlobalBestPosition(), globalBestParticle.getGlobalBestFitness());
+		}
+	}
+	
+	public List<Particle> getNeighbors(Particle particle) {
+		List<Particle> neighbors = new ArrayList<>();
+		for (Particle p : particles) {
+			double distance = Tools.euclidean(particle.position, p.position);
+			if (distance < communicationRange && p != particle)
+				neighbors.add(p);
+		}
+		return neighbors;
 	}
 	
 	public void runIteration() {

@@ -9,22 +9,24 @@ import problem.Target;
 import pso.Fitness;
 import pso.FitnessTarget;
 import pso.PSO;
+import tools.Tools;
 
 public class Driver {
+	
+	static int numRobots = 8;
+	static double roomSize = 100;
+	static double maxSpeed = 1.0;
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
 		
-		// TODO: remove global knowledge from particles
-		// TODO: clamp search area
+		// NOTE: had to randomly set bestLocations until bestFitness was greater than 0
+		// NOTE: fitness has a falloff until it gets small enough, then imperceptible
+		
 		// TODO: write server code
 		// TODO: write communication-based velocity update
-		
-		int numRobots = 8;
-		double roomSize = 100;
-		double maxSpeed = 1.0;
 		
 		List<Target> targets = getTargets();
 		
@@ -39,18 +41,26 @@ public class Driver {
 		room.runIterations(1000);
 	}
 	
+	private static List<Target> getRandomTargets(int number, int strength) {
+		List<Target> targets = new ArrayList<>();
+		for (int i = 0; i < number; i++)
+			targets.add(new Target(Tools.random.nextInt((int) roomSize), Tools.random.nextInt((int) roomSize)));
+		return targets;
+	}
+	
 	private static List<Target> getTargets() {
 		List<Target> targets = new ArrayList<>();
 		
 		Target target1 = new Target(15, 50);
-		//target1.setIntensity(500000);
 		
 		Target target2 = new Target(50, 60);
+		//target2.setIntensity(5);
 		
 		Target target3 = new Target(70, 20);
+		//target3.setIntensity(300);
 		
 		targets.add(target1);
-		//targets.add(target2);
+		targets.add(target2);
 		//targets.add(target3);
 		
 		return targets;

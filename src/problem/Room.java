@@ -53,7 +53,7 @@ public class Room {
 			System.exit(1);
 		}
 		targets.add(target);
-		Node node = new Node(target.x, target.y, 3, target.color);
+		Node node = new Node(target.x, target.y, target.visibleRadius, target.color);
 		targetMap.put(target, node);
 		vis.addNode(node);
 	}

@@ -32,13 +32,30 @@ public class Particle {
 		}
 		personalBestPosition = new double[position.length];
 		globalBestPosition = new double[position.length];
+		setRandom();
+		/*
 		for (int i = 0; i < position.length; i++) {
 			personalBestPosition[i] = position[i];
 			globalBestPosition[i] = position[i];
 		}
+		*/
+	}
+	
+	private void setRandom() {
+		if (personalBestFitness == 0) {
+			for (int i = 0; i < position.length; i++) {
+				personalBestPosition[i] = Tools.getRandomDouble(minValue, maxValue);
+			}
+		}
+		if (globalBestFitness == 0) {
+			for (int i = 0; i < position.length; i++) {
+				globalBestPosition[i] = Tools.getRandomDouble(minValue, maxValue);
+			}
+		}
 	}
 	
 	public void runIteration() {
+		setRandom();
 		if (extended)
 			velocityUpdateExtended();
 		else
@@ -116,8 +133,12 @@ public class Particle {
 		return velocity[i];
 	}
 	
-	public String getBestPosition() {
+	public String stringPersonalBestPosition() {
 		return "["+personalBestPosition[0]+","+personalBestPosition[1]+"]";
+	}
+	
+	public String stringGlobalBestPosition() {
+		return "["+globalBestPosition[0]+","+globalBestPosition[1]+"]";
 	}
 	
 	public void updatePersonalBestPosition(double fitness) {
@@ -128,12 +149,28 @@ public class Particle {
 		}
 	}
 	
-	public void updateGlobalBestPosition(double[] globalPosition, double fitness) {
-		if (fitness > globalBestFitness) {
-			globalBestFitness = fitness;
+	public void updateGlobalBestPosition(double[] globalPosition, double newFitness) {
+		if (newFitness > globalBestFitness) {
+			globalBestFitness = newFitness;
 			for (int i = 0; i < globalPosition.length; i++)
-				personalBestPosition[i] = globalPosition[i];
+				globalBestPosition[i] = globalPosition[i];
 		}
+	}
+	
+	public double getPersonalBestFitness() {
+		return personalBestFitness;
+	}
+	
+	public double[] getPersonalBestPosition() {
+		return personalBestPosition;
+	}
+	
+	public double getGlobalBestFitness() {
+		return globalBestFitness;
+	}
+	
+	public double[] getGlobalBestPosition() {
+		return globalBestPosition;
 	}
 
 }
