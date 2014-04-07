@@ -24,7 +24,7 @@ public class Room {
 	Map<Target, Node> targetMap = new HashMap<>();
 	Map<Server, Node> serverMap = new HashMap<>();
 	int timestep = 0;
-	boolean draw = true;
+	boolean draw = false;
 	int pause = 100;
 	
 	public Room(double size) {
@@ -36,7 +36,8 @@ public class Room {
 		this.height = size;
 		vis = new Visualize("Area", Tools.toInt(width), Tools.toInt(height));
 		vis.setScale(visualizerSize/size);
-		vis.draw();
+		if (draw)
+			vis.draw();
 	}
 	
 	public void addSwarm(PSO swarm) {
@@ -96,10 +97,12 @@ public class Room {
 		for (Server server : servers)
 			server.runIteration();
 		updateArea();
-		draw();
-		try {	
-			Thread.sleep(pause);	
-		} catch (InterruptedException e) {	e.printStackTrace();	}
+		if (draw) {
+			draw();
+			try {	
+				Thread.sleep(pause);	
+			} catch (InterruptedException e) {	e.printStackTrace();	}
+		}
 	}
 	
 	public int getTimestep() {
@@ -123,9 +126,15 @@ public class Room {
 	}
 	
 	public void draw() {
-		vis.removeAll();
-		vis.updateUI();
-		vis.repaint();
+		if (draw) {
+			vis.removeAll();
+			vis.updateUI();
+			vis.repaint();
+		}
+	}
+	
+	public void animate(boolean draw) {
+		this.draw = draw;
 	}
 
 }

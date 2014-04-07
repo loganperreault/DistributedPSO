@@ -32,6 +32,7 @@ public class Driver {
 		Server server = new Server(90, 10);
 		
 		Room room = new Room(roomSize);
+		room.animate(false);
 		
 		Fitness fitnessEvaluation = new FitnessTarget(room, targets);
 		Fitness communicationEvaluation = new FitnessCommunication(room, server);
@@ -45,6 +46,9 @@ public class Driver {
 		
 		Evaluation eval = new Evaluation(room);
 		eval.test();
+		System.out.println("   VALID TIMESTEPS: "+eval.getValidTimesteps());
+		System.out.println("TIMESTEP CONVERGED: "+eval.getTimestepConverged());
+		System.out.println(" CONVERGENCE VALUE: "+eval.getConvergenceValue());
 	}
 	
 	private static List<Target> getRandomTargets(int number, int strength) {
