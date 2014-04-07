@@ -12,8 +12,8 @@ public class PSO {
 	public static double socialInfluence = 0.1;
 	Fitness fitnessEvaluation;
 	Fitness communicationEvaluation;
-	public static Particle globalBestParticle;
-	double avgFitness, globalBestFitness = 0.0;
+	public static Particle globalBestParticle, communicationGlobalBestParticle;
+	double globalBestFitness, communicationGlobalBestFitness;
 	public static int targetCommunicationSteps = 50;
 	
 	public List<Particle> particles = new ArrayList<>();
@@ -50,8 +50,10 @@ public class PSO {
 		
 		// find the best position anyone knows about within communication range for each particle
 		for (Particle particle : particles) {
-			globalBestFitness = particle.getGlobalBestFitness();
-			globalBestParticle = particle;
+			double globalBestFitness = particle.getGlobalBestFitness();
+			Particle globalBestParticle = particle;
+			double communicationGlobalBestFitness = particle.getCommunicationGlobalBestFitness();
+			Particle communicationGlobalBestParticle = particle;
 			List<Particle> neighbors = getNeighbors(particle);
 			//System.out.println(neighbors.size());
 			for (Particle neighbor : neighbors) {
@@ -59,8 +61,14 @@ public class PSO {
 					globalBestFitness = neighbor.getGlobalBestFitness();
 					globalBestParticle = neighbor;
 				}
+				if (neighbor.getCommunicationGlobalBestFitness() > communicationGlobalBestFitness) {
+					communicationGlobalBestFitness = neighbor.getCommunicationGlobalBestFitness();
+					communicationGlobalBestParticle = neighbor;
+				}
 			}
 			particle.updateGlobalBestPosition(globalBestParticle.getGlobalBestPosition(), globalBestParticle.getGlobalBestFitness());
+			particle.updateCommunicationGlobalBestPosition(communicationGlobalBestParticle.getCommunicationGlobalBestPosition(), 
+															communicationGlobalBestParticle.getCommunicationGlobalBestFitness());
 		}
 	}
 	

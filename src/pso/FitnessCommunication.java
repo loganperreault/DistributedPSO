@@ -31,7 +31,7 @@ public class FitnessCommunication extends Fitness {
 			if (distance <= particle.communicationRange) {
 				intensity = 1.0;
 				// TODO: this transmittion should be done elsewhere
-				System.out.println("TRANSMIT");
+				//System.out.println("TRANSMIT");
 				server.transmitSolution(particle.getGlobalBestPosition(), particle.getGlobalBestFitness());
 			}
 		}

@@ -171,6 +171,17 @@ public class Particle {
 		return "["+globalBestPosition[0]+","+globalBestPosition[1]+"]";
 	}
 	
+	public void serverUpdate(double[] globalPosition, double newFitness) {
+		if (newFitness >= globalBestFitness) {
+			lastCommunicationTimestep = timestep;
+			if (newFitness > globalBestFitness) {
+				globalBestFitness = newFitness;
+				for (int i = 0; i < globalPosition.length; i++)
+					globalBestPosition[i] = globalPosition[i];
+			}
+		}
+	}
+	
 	public void updatePersonalBestPosition(double fitness) {
 		if (fitness > personalBestFitness) {
 			personalBestFitness = fitness;
@@ -184,17 +195,6 @@ public class Particle {
 			globalBestFitness = newFitness;
 			for (int i = 0; i < globalPosition.length; i++)
 				globalBestPosition[i] = globalPosition[i];
-		}
-	}
-	
-	public void serverUpdate(double[] globalPosition, double newFitness) {
-		if (newFitness >= globalBestFitness) {
-			lastCommunicationTimestep = timestep;
-			if (newFitness > globalBestFitness) {
-				globalBestFitness = newFitness;
-				for (int i = 0; i < globalPosition.length; i++)
-					globalBestPosition[i] = globalPosition[i];
-			}
 		}
 	}
 	
