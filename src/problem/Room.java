@@ -15,9 +15,9 @@ import visualizer.Visualize;
 public class Room {
 	
 	double width, height;
-	List<Target> targets = new ArrayList<>();
-	List<Server> servers = new ArrayList<>();
-	PSO swarm;
+	public List<Target> targets = new ArrayList<>();
+	public List<Server> servers = new ArrayList<>();
+	public PSO swarm;
 	Visualize vis;
 	int visualizerSize = 800;
 	Map<Particle, Node> particleMap = new HashMap<>();
@@ -83,18 +83,27 @@ public class Room {
 	}
 	
 	public void runIterations(int timesteps) {
-		for (timestep = 0; timestep < timesteps; timestep++) {
-			nextTimestep();
+		for (int i = 0; i < timesteps; i++) {
+			runIteration();
 		}
 	}
 	
-	private void nextTimestep() {
+	public void runIteration() {
+		timestep++;
 		swarm.runIteration();
+		for (Target target : targets)
+			target.runIteration();
+		for (Server server : servers)
+			server.runIteration();
 		updateArea();
 		draw();
 		try {	
 			Thread.sleep(pause);	
 		} catch (InterruptedException e) {	e.printStackTrace();	}
+	}
+	
+	public int getTimestep() {
+		return timestep;
 	}
 	
 	private void updateArea() {
@@ -106,6 +115,10 @@ public class Room {
 		for (Target target : targets) {
 			Node node = targetMap.get(target);
 			node.setPosition(Tools.toInt(target.x), Tools.toInt(target.y));
+		}
+		for (Server server : servers) {
+			Node node = serverMap.get(server);
+			node.setPosition(Tools.toInt(server.x), Tools.toInt(server.y));
 		}
 	}
 	

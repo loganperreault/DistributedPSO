@@ -11,6 +11,7 @@ import pso.FitnessCommunication;
 import pso.FitnessTarget;
 import pso.PSO;
 import tools.Tools;
+import evaluation.Evaluation;
 
 public class Driver {
 	
@@ -25,9 +26,7 @@ public class Driver {
 		
 		// NOTE: had to randomly set bestLocations until bestFitness was greater than 0
 		// NOTE: fitness has a falloff until it gets small enough, then imperceptible
-		
-		// TODO: write server code
-		// TODO: write communication-based velocity update
+		// NOTE: communication velocity update has an exponential dropoff when timesteps are up so a solution is maintained
 		
 		List<Target> targets = getTargets();
 		Server server = new Server(90, 10);
@@ -44,7 +43,8 @@ public class Driver {
 		room.addTargets(targets);
 		room.addServer(server);
 		
-		room.runIterations(1000);
+		Evaluation eval = new Evaluation(room);
+		eval.test();
 	}
 	
 	private static List<Target> getRandomTargets(int number, int strength) {

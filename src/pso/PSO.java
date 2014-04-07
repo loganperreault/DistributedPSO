@@ -14,14 +14,17 @@ public class PSO {
 	Fitness communicationEvaluation;
 	public static Particle globalBestParticle, communicationGlobalBestParticle;
 	double globalBestFitness, communicationGlobalBestFitness;
-	public static int targetCommunicationSteps = 50;
+	private int targetCommunicationSteps = 50;
+	public int communicationOffset = 10;
 	
 	public List<Particle> particles = new ArrayList<>();
 	int particleDimension = 2;
 	
 	public PSO(int swarmSize, double minValue, double maxValue, double maxSpeed, Fitness fitnessEvaluation, Fitness communicationEvaluation) {
-		for (int i = 0; i < swarmSize; i++)
-			particles.add(new Particle(particleDimension, minValue, maxValue, maxSpeed));
+		for (int i = 0; i < swarmSize; i++) {
+			Particle particle = new Particle(particleDimension, minValue, maxValue, maxSpeed, targetCommunicationSteps + i * communicationOffset);
+			particles.add(particle);
+		}
 		this.fitnessEvaluation = fitnessEvaluation;
 		this.communicationEvaluation = communicationEvaluation;
 		globalBestParticle = particles.get(0);

@@ -14,6 +14,7 @@ public class Particle {
 	private int timestep = 0;
 	private int lastCommunicationTimestep = 0;
 	public double communicationRange = 30;
+	public int targetCommunicationSteps;
 
 	/**
 	 * Create a new particle 
@@ -22,11 +23,12 @@ public class Particle {
 	 * @param minValue	The minimum value accessible by the particle.
 	 * @param maxValue	The maximum value accessible by the particle.
 	 */
-	public Particle(int size, double minValue, double maxValue, double maxSpeed) {
+	public Particle(int size, double minValue, double maxValue, double maxSpeed, int targetCommunicationSteps) {
 		this.size = size;
 		this.maxSpeed = maxSpeed;
 		this.minValue = minValue;
 		this.maxValue = maxValue;
+		this.targetCommunicationSteps = targetCommunicationSteps;
 		position = new double[size];
 		velocity = new double[size];
 		for (int i = 0; i < size; i++) {
@@ -67,6 +69,7 @@ public class Particle {
 	}
 	
 	public void runIteration() {
+		//System.out.println("SERVER POSITION: ["+communicationPersonalBestPosition[0]+","+communicationPersonalBestPosition[1]+"]");
 		timestep++;
 		setRandom();
 		if (extended)
@@ -103,11 +106,15 @@ public class Particle {
 	
 	private void velocityUpdateExtended() {
 		// for each component in the vectors
-		double communicationWeight = ((timestep - lastCommunicationTimestep) / PSO.targetCommunicationSteps);
+		//double communicationWeight = ((double)(timestep - lastCommunicationTimestep) / targetCommunicationSteps);
+		double communicationWeight = (Math.pow(Math.E,(timestep - lastCommunicationTimestep)) / Math.pow(Math.E,targetCommunicationSteps));
+		//System.out.println(timestep+" - "+lastCommunicationTimestep+" / "+targetCommunicationSteps+" = "+communicationWeight);
 		for (int i = 0; i < velocity.length; i++) {
 			double momentum = PSO.momentum * velocity[i];
 			double goal = goal(i);
 			double communication = communication(i);
+			//System.out.println(momentum + " + " + (1 - communicationWeight)+" * "+goal+" + "+communicationWeight +" * "+communication);
+			//System.out.println(Tools.round((1 - communicationWeight),3)+" + "+Tools.round(communicationWeight,3));
 			double update = momentum + (1 - communicationWeight) * goal + communicationWeight * communication;
 			velocity[i] += update;
 			clampSpeed();
@@ -121,7 +128,9 @@ public class Particle {
 	}
 	
 	public double communication(int index) {
-		return 0.0;
+		double cognitive = Tools.getRandomDouble(0, PSO.cognitiveInfluence) * (communicationPersonalBestPosition[index] - position[index]);
+		double social = Tools.getRandomDouble(0, PSO.socialInfluence) * (communicationGlobalBestPosition[index] - position[index]);
+		return cognitive + social;
 	}
 	
 	private void clampSpeed() {
@@ -155,6 +164,10 @@ public class Particle {
 		System.out.println("]");
 	}
 	
+	public double[] position() {
+		return position;
+	}
+	
 	public double getPosition(int i) {
 		return position[i];
 	}
@@ -171,7 +184,7 @@ public class Particle {
 		return "["+globalBestPosition[0]+","+globalBestPosition[1]+"]";
 	}
 	
-	public void serverUpdate(double[] globalPosition, double newFitness) {
+	public void serverUpdateSolution(double[] globalPosition, double newFitness) {
 		if (newFitness >= globalBestFitness) {
 			lastCommunicationTimestep = timestep;
 			if (newFitness > globalBestFitness) {
@@ -179,6 +192,15 @@ public class Particle {
 				for (int i = 0; i < globalPosition.length; i++)
 					globalBestPosition[i] = globalPosition[i];
 			}
+		}
+	}
+	
+	public void serverUpdatePosition(double[] serverPosition) {
+		communicationGlobalBestFitness = 1.0;
+		communicationPersonalBestFitness = 1.0;
+		for (int i = 0; i < serverPosition.length; i++) {
+			communicationGlobalBestPosition[i] = serverPosition[i];
+			communicationPersonalBestPosition[i] = serverPosition[i];
 		}
 	}
 	

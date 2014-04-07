@@ -32,5 +32,9 @@ public class Target {
 	public void setColor(Color color) {
 		this.color = color;
 	}
+	
+	public void runIteration() {
+		// Stationary target, so do nothing
+	}
 
 }

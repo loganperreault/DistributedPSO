@@ -6,6 +6,7 @@ import java.util.List;
 
 import pso.PSO;
 import pso.Particle;
+import tools.Tools;
 
 public class Server {
 	
@@ -13,7 +14,7 @@ public class Server {
 	
 	public Color color = Color.GREEN;
 	public int x, y;
-	double communicationRange = 1000;
+	double communicationRange = 50;
 	List<PSO> swarms;
 	double solutionFitness;
 	double[] solutionPosition;
@@ -27,6 +28,11 @@ public class Server {
 		return new double[] {x, y};
 	}
 	
+	public void runIteration() {
+		broadcastPosition();
+		broadcastSolution();
+	}
+	
 	public void setCommunicationRange(double communicationRange) {
 		this.communicationRange = communicationRange;
 	}
@@ -37,10 +43,26 @@ public class Server {
 			solutionPosition = position;
 			solutionFitness = fitness;
 			// broadcast solution
-			for (PSO swarm : swarms) {
-				for (Particle particle : swarm.particles) {
-					particle.serverUpdate(solutionPosition, solutionFitness);
-				}
+			broadcastSolution();
+		}
+	}
+	
+	private void broadcastSolution() {
+		for (PSO swarm : swarms) {
+			for (Particle particle : swarm.particles) {
+				double distance = Tools.euclidean(particle.position(), this.position());
+				if (distance < communicationRange)	
+					particle.serverUpdateSolution(solutionPosition, solutionFitness);
+			}
+		}
+	}
+	
+	public void broadcastPosition() {
+		for (PSO swarm : swarms) {
+			for (Particle particle : swarm.particles) {
+				double distance = Tools.euclidean(particle.position(), this.position());
+				if (distance < communicationRange)
+					particle.serverUpdatePosition(position());
 			}
 		}
 	}
@@ -53,6 +75,14 @@ public class Server {
 		if (swarms == null)
 			swarms = new ArrayList<>();
 		swarms.add(swarm);
+	}
+	
+	public double getSolutionFitness() {
+		return solutionFitness;
+	}
+	
+	public double[] getSolutionPosition() {
+		return solutionPosition;
 	}
 
 }
