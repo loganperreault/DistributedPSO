@@ -127,6 +127,7 @@ public class Room {
 	
 	public void draw() {
 		if (draw) {
+			vis.draw();
 			vis.removeAll();
 			vis.updateUI();
 			vis.repaint();

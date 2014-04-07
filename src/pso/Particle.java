@@ -6,6 +6,7 @@ import tools.Tools;
 public class Particle {
 	
 	boolean extended = true;
+	boolean random = true;
 	int size;
 	double[] position, velocity, personalBestPosition, globalBestPosition, communicationPersonalBestPosition, communicationGlobalBestPosition;
 	private double personalBestFitness, globalBestFitness, communicationPersonalBestFitness, communicationGlobalBestFitness;
@@ -72,10 +73,14 @@ public class Particle {
 		//System.out.println("SERVER POSITION: ["+communicationPersonalBestPosition[0]+","+communicationPersonalBestPosition[1]+"]");
 		timestep++;
 		setRandom();
-		if (extended)
-			velocityUpdateExtended();
-		else
-			velocityUpdate();
+		if (random) {
+			velocityUpdateRandom();
+		} else {
+			if (extended)
+				velocityUpdateExtended();
+			else
+				velocityUpdate();
+		}
 		move();
 	}
 	
@@ -118,6 +123,13 @@ public class Particle {
 			double update = momentum + (1 - communicationWeight) * goal + communicationWeight * communication;
 			velocity[i] += update;
 			clampSpeed();
+		}
+	}
+	
+	private void velocityUpdateRandom() {
+		// for each component in the vectors
+		for (int i = 0; i < velocity.length; i++) {
+			velocity[i] = Tools.getRandomDouble(-maxSpeed, maxSpeed);
 		}
 	}
 	
