@@ -7,6 +7,8 @@ public class Node {
 	protected Color color = Color.BLACK;
 	protected int x, y;
 	protected int size = 5;
+	protected Shape shape = Shape.CIRCLE;
+	protected int circledRadius = 0;
 	
 	public Node(int x, int y) {
 		initialize(x, y, size, color);
@@ -34,6 +36,14 @@ public class Node {
 	public void setPosition(int x, int y) {
 		this.x = x;
 		this.y = y;
+	}
+	
+	public void setShape(Shape shape) {
+		this.shape = shape;
+	}
+	
+	public void setCircledCenter(int radius) {
+		this.circledRadius = radius;
 	}
 
 }

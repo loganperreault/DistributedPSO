@@ -16,6 +16,7 @@ public class PSO {
 	double globalBestFitness, communicationGlobalBestFitness;
 	private int targetCommunicationSteps = 50;
 	public int communicationOffset = 10;
+	double degradeFactor = 1.0;
 	
 	public List<Particle> particles = new ArrayList<>();
 	int particleDimension = 2;
@@ -85,11 +86,20 @@ public class PSO {
 		return neighbors;
 	}
 	
+	public void setDegradeFactor(double degradeFactor) {
+		if (degradeFactor < 0 || degradeFactor > 1) {
+			System.out.println("ERROR: degrade factor must be between 0 and 1.");
+			System.exit(1);
+		}
+		this.degradeFactor = degradeFactor;
+	}
+	
 	public void runIteration() {
 		for (Particle particle : particles) {
 			particle.runIteration();
-			evaluateParticles();
+			particle.degradeFitness(degradeFactor);
 		}
+		evaluateParticles();
 	}
 
 }

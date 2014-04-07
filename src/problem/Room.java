@@ -10,6 +10,7 @@ import pso.PSO;
 import pso.Particle;
 import tools.Tools;
 import visualizer.Node;
+import visualizer.Shape;
 import visualizer.Visualize;
 
 public class Room {
@@ -42,8 +43,15 @@ public class Room {
 	
 	public void addSwarm(PSO swarm) {
 		this.swarm = swarm;
-		for (Particle particle : swarm.particles) {
+		for (int i = 0; i < swarm.particles.size(); i++) {
+			Particle particle = swarm.get(i);
 			Node node = new Node(Tools.toInt(particle.getPosition(0)), Tools.toInt(particle.getPosition(1)), 2, Color.BLUE);
+			node.setShape(Shape.TRIANGLE);
+			System.out.println(particle.communicationRange*2);
+			if (i == 0) {
+				node.setCircledCenter(Tools.toInt(particle.communicationRange));
+				node.setShape(Shape.TRIANGLE2);
+			}
 			particleMap.put(particle, node);
 			vis.addNode(node);
 		}
@@ -56,7 +64,7 @@ public class Room {
 			System.exit(1);
 		}
 		targets.add(target);
-		Node node = new Node(target.x, target.y, target.visibleRadius, target.color);
+		Node node = new Node(Tools.toInt(target.x), Tools.toInt(target.y), target.visibleRadius, target.color);
 		targetMap.put(target, node);
 		vis.addNode(node);
 	}
@@ -74,6 +82,8 @@ public class Room {
 		}
 		servers.add(server);
 		Node node = new Node(server.x, server.y, 3, server.color);
+		node.setShape(Shape.SQUARE);
+		node.setCircledCenter(Tools.toInt(server.communicationRange));
 		serverMap.put(server, node);
 		vis.addNode(node);
 	}

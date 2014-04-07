@@ -6,15 +6,15 @@ import tools.Tools;
 public class Particle {
 	
 	boolean extended = true;
-	boolean random = true;
+	boolean random = false;
 	int size;
 	double[] position, velocity, personalBestPosition, globalBestPosition, communicationPersonalBestPosition, communicationGlobalBestPosition;
-	private double personalBestFitness, globalBestFitness, communicationPersonalBestFitness, communicationGlobalBestFitness;
+	protected double personalBestFitness, globalBestFitness, communicationPersonalBestFitness, communicationGlobalBestFitness;
 	private double maxSpeed;
 	private double minValue, maxValue;
 	private int timestep = 0;
 	private int lastCommunicationTimestep = 0;
-	public double communicationRange = 30;
+	public double communicationRange = 15;
 	public int targetCommunicationSteps;
 
 	/**
@@ -281,6 +281,11 @@ public class Particle {
 	
 	public double[] getCommunicationGlobalBestPosition() {
 		return communicationGlobalBestPosition;
+	}
+	
+	protected void degradeFitness(double degradeFactor) {
+		personalBestFitness *= degradeFactor;
+		globalBestFitness *= degradeFactor;
 	}
 
 }

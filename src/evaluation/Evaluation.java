@@ -92,5 +92,9 @@ public class Evaluation {
 		solutionValue[room.getTimestep() - 1] /= maxValue;
 		
 	}
+	
+	public void setTimesteps(int timesteps) {
+		this.timesteps = timesteps;
+	}
 
 }

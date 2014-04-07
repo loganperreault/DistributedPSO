@@ -6,10 +6,11 @@ import tools.Tools;
 
 public class Target {
 	
-	int x, y;
+	double x, y;
 	double intensity = 300;
 	Color color = Color.RED;
 	int visibleRadius = 3;
+	double vx, vy;
 	
 	public Target(int x, int y) {
 		this.x = x;
@@ -18,6 +19,15 @@ public class Target {
 	
 	public double[] position() {
 		return new double[] {x, y};
+	}
+	
+	public void setVelocity(double vx, double vy) {
+		this.vx = vx;
+		this.vy = vy;
+	}
+	
+	public double[] getVelocity() {
+		return new double[] {vx, vy};
 	}
 	
 	public double getIntensity() {
@@ -34,7 +44,12 @@ public class Target {
 	}
 	
 	public void runIteration() {
-		// Stationary target, so do nothing
+		x += vx;
+		y += vy;
+	}
+	
+	public void setVisibleRadius(int radius) {
+		this.visibleRadius = radius;
 	}
 
 }

@@ -18,6 +18,7 @@ public class Server {
 	List<PSO> swarms;
 	double solutionFitness;
 	double[] solutionPosition;
+	double degradeFactor = 1.0;
 	
 	public Server(int x, int y) {
 		this.x = x;
@@ -29,6 +30,7 @@ public class Server {
 	}
 	
 	public void runIteration() {
+		degradeSolution();
 		broadcastPosition();
 		broadcastSolution();
 	}
@@ -47,12 +49,17 @@ public class Server {
 		}
 	}
 	
+	private void degradeSolution() {
+		solutionFitness *= degradeFactor;
+	}
+	
 	private void broadcastSolution() {
 		for (PSO swarm : swarms) {
 			for (Particle particle : swarm.particles) {
 				double distance = Tools.euclidean(particle.position(), this.position());
-				if (distance < communicationRange)	
+				if (distance < communicationRange)	{
 					particle.serverUpdateSolution(solutionPosition, solutionFitness);
+				}
 			}
 		}
 	}
@@ -83,6 +90,14 @@ public class Server {
 	
 	public double[] getSolutionPosition() {
 		return solutionPosition;
+	}
+	
+	public void setDegradeFactor(double degradeFactor) {
+		if (degradeFactor < 0 || degradeFactor > 1) {
+			System.out.println("ERROR: degrade factor must be between 0 and 1.");
+			System.exit(1);
+		}
+		this.degradeFactor = degradeFactor;
 	}
 
 }

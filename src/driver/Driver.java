@@ -18,6 +18,8 @@ public class Driver {
 	static int numRobots = 8;
 	static double roomSize = 100;
 	static double maxSpeed = 1.0;
+	static double degradeFactor = 0.95;
+	static boolean mobile = true;
 	
 	/**
 	 * @param args
@@ -28,15 +30,34 @@ public class Driver {
 		// NOTE: fitness has a falloff until it gets small enough, then imperceptible
 		// NOTE: communication velocity update has an exponential dropoff when timesteps are up so a solution is maintained
 		
+		// NOTE: generated a figure using serverRange = 50, particleRange = 15, targets 1 and 2, focused on first particle, stopped a t = 128
+		
 		List<Target> targets = getTargets();
+		
+		// add noise
+		List<Target> noise = getRandomTargets(100, 0, 1);
+		for (Target t : noise)
+			targets.add(t);
+		
+		// create server object
 		Server server = new Server(90, 10);
 		
+		// Use mobile targets instead
+		if (mobile) {
+			targets = getMobileTargets();
+			server.setDegradeFactor(degradeFactor);
+		}
+		
+		// create the problem area
 		Room room = new Room(roomSize);
-		room.animate(false);
+		room.animate(true);
 		
 		Fitness fitnessEvaluation = new FitnessTarget(room, targets);
 		Fitness communicationEvaluation = new FitnessCommunication(room, server);
 		PSO swarm = new PSO(numRobots, 0, roomSize, maxSpeed, fitnessEvaluation, communicationEvaluation);
+		
+		if (mobile)
+			swarm.setDegradeFactor(degradeFactor);
 		
 		server.addSwarm(swarm);
 		
@@ -45,16 +66,31 @@ public class Driver {
 		room.addServer(server);
 		
 		Evaluation eval = new Evaluation(room);
+		//eval.setTimesteps(128);
 		eval.test();
 		System.out.println("   VALID TIMESTEPS: "+eval.getValidTimesteps());
 		System.out.println("TIMESTEP CONVERGED: "+eval.getTimestepConverged());
 		System.out.println(" CONVERGENCE VALUE: "+eval.getConvergenceValue());
 	}
 	
-	private static List<Target> getRandomTargets(int number, int strength) {
+	private static List<Target> getRandomTargets(int number, double minStrength, double maxStrength) {
 		List<Target> targets = new ArrayList<>();
-		for (int i = 0; i < number; i++)
-			targets.add(new Target(Tools.random.nextInt((int) roomSize), Tools.random.nextInt((int) roomSize)));
+		for (int i = 0; i < number; i++) {
+			Target target = new Target(Tools.random.nextInt((int) roomSize), Tools.random.nextInt((int) roomSize));
+			target.setIntensity(Tools.getRandomDouble(minStrength, maxStrength));
+			target.setVisibleRadius(1);
+			targets.add(target);
+		}
+		return targets;
+	}
+	
+	private static List<Target> getRandomTargets(int number, double strength) {
+		List<Target> targets = new ArrayList<>();
+		for (int i = 0; i < number; i++) {
+			Target target = new Target(Tools.random.nextInt((int) roomSize), Tools.random.nextInt((int) roomSize));
+			target.setIntensity(strength);
+			targets.add(target);
+		}
 		return targets;
 	}
 	
@@ -72,6 +108,17 @@ public class Driver {
 		targets.add(target1);
 		targets.add(target2);
 		//targets.add(target3);
+		
+		return targets;
+	}
+	
+	private static List<Target> getMobileTargets() {
+		List<Target> targets = new ArrayList<>();
+		
+		Target target1 = new Target(10, 40);
+		target1.setVelocity(0.1, 0.05);
+		
+		targets.add(target1);
 		
 		return targets;
 	}

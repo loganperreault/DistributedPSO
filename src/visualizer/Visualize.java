@@ -1,8 +1,9 @@
 package visualizer;
 
-import java.awt.Color;
+import java.awt.BasicStroke;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Stroke;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,6 +17,14 @@ public class Visualize extends JPanel {
 	int width, height;
 	double scale = 1.0;
 	List<Node> nodes = new ArrayList<>();
+	
+	Stroke strokeDefault = new BasicStroke();
+	Stroke strokeDashed = new BasicStroke(4.0f,                      // Width
+            BasicStroke.CAP_SQUARE,    // End cap
+            BasicStroke.JOIN_MITER,    // Join style
+            10.0f,                     // Miter limit
+            new float[] {16.0f,20.0f}, // Dash pattern
+            0.0f);                     // Dash phase
 	
 	public Visualize(String name, int width, int height) {
 		frame = new JFrame(name);
@@ -44,7 +53,24 @@ public class Visualize extends JPanel {
 		Graphics2D g2d = (Graphics2D) g;
 		for (Node node : nodes) {
 			g2d.setColor(node.color);
-			g2d.fillOval(scale(node.x), scale(node.y), scale(node.size), scale(node.size));
+			if (node.shape == Shape.CIRCLE)
+				g2d.fillOval(scale(node.x) - scale(node.size)/2, scale(node.y) - scale(node.size)/2, scale(node.size), scale(node.size));
+			else if (node.shape == Shape.SQUARE)
+				g2d.fillRect(scale(node.x) - scale(node.size)/2, scale(node.y) - scale(node.size)/2, scale(node.size), scale(node.size));
+			else if (node.shape == Shape.TRIANGLE || node.shape == Shape.TRIANGLE2) {
+				int[] xPoints = new int[] {scale(node.x) - scale(node.size)/2, scale(node.x) + scale(node.size)/2, scale(node.x)};
+				int[] yPoints = null;
+				if (node.shape == Shape.TRIANGLE)
+					yPoints = new int[] {scale(node.y) + scale(node.size)/2, scale(node.y) + scale(node.size)/2, scale(node.y) - scale(node.size)/2};
+				else if (node.shape == Shape.TRIANGLE2)
+					yPoints = new int[] {scale(node.y) - scale(node.size)/2, scale(node.y) - scale(node.size)/2, scale(node.y) + scale(node.size)/2};
+				g2d.fillPolygon(xPoints, yPoints, 3);
+			}
+			if (node.circledRadius > 0) {
+				g2d.setStroke(strokeDashed);
+				g2d.drawOval(scale(node.x) - scale(node.circledRadius*2)/2, scale(node.y) - scale(node.circledRadius*2)/2, scale(node.circledRadius*2), scale(node.circledRadius*2));
+				g2d.setStroke(strokeDefault);
+			}
 		}
 	}
 	
