@@ -1,6 +1,8 @@
 package pso;
 
 
+import java.util.List;
+
 import tools.Tools;
 
 public class Particle {
@@ -12,10 +14,11 @@ public class Particle {
 	protected double personalBestFitness, globalBestFitness, communicationPersonalBestFitness, communicationGlobalBestFitness;
 	private double maxSpeed;
 	private double minValue, maxValue;
-	private int timestep = 0;
-	private int lastCommunicationTimestep = 0;
-	public double communicationRange = 15;
+	public int timestep = 0;
+	public int lastCommunicationTimestep = 0;
+	public double communicationRange = 25;
 	public int targetCommunicationSteps;
+	public double exploreProbability = 0.1;
 
 	/**
 	 * Create a new particle 
@@ -47,22 +50,22 @@ public class Particle {
 	 * Sets best locations to random positions for exploration if no reward has been found yet
 	 */
 	private void setRandom() {
-		if (personalBestFitness == 0) {
+		if (personalBestFitness == 0 && Tools.random.nextDouble() < exploreProbability) {
 			for (int i = 0; i < position.length; i++) {
 				personalBestPosition[i] = Tools.getRandomDouble(minValue, maxValue);
 			}
 		}
-		if (globalBestFitness == 0) {
+		if (globalBestFitness == 0 && Tools.random.nextDouble() < exploreProbability) {
 			for (int i = 0; i < position.length; i++) {
 				globalBestPosition[i] = Tools.getRandomDouble(minValue, maxValue);
 			}
 		}
-		if (communicationPersonalBestFitness == 0) {
+		if (communicationPersonalBestFitness == 0 && Tools.random.nextDouble() < exploreProbability) {
 			for (int i = 0; i < position.length; i++) {
 				communicationPersonalBestPosition[i] = Tools.getRandomDouble(minValue, maxValue);
 			}
 		}
-		if (communicationGlobalBestFitness == 0) {
+		if (communicationGlobalBestFitness == 0 && Tools.random.nextDouble() < exploreProbability) {
 			for (int i = 0; i < position.length; i++) {
 				communicationGlobalBestPosition[i] = Tools.getRandomDouble(minValue, maxValue);
 			}
@@ -111,15 +114,11 @@ public class Particle {
 	
 	private void velocityUpdateExtended() {
 		// for each component in the vectors
-		//double communicationWeight = ((double)(timestep - lastCommunicationTimestep) / targetCommunicationSteps);
 		double communicationWeight = (Math.pow(Math.E,(timestep - lastCommunicationTimestep)) / Math.pow(Math.E,targetCommunicationSteps));
-		//System.out.println(timestep+" - "+lastCommunicationTimestep+" / "+targetCommunicationSteps+" = "+communicationWeight);
 		for (int i = 0; i < velocity.length; i++) {
 			double momentum = PSO.momentum * velocity[i];
 			double goal = goal(i);
 			double communication = communication(i);
-			//System.out.println(momentum + " + " + (1 - communicationWeight)+" * "+goal+" + "+communicationWeight +" * "+communication);
-			//System.out.println(Tools.round((1 - communicationWeight),3)+" + "+Tools.round(communicationWeight,3));
 			double update = momentum + (1 - communicationWeight) * goal + communicationWeight * communication;
 			velocity[i] += update;
 			clampSpeed();
@@ -196,9 +195,9 @@ public class Particle {
 		return "["+globalBestPosition[0]+","+globalBestPosition[1]+"]";
 	}
 	
-	public void serverUpdateSolution(double[] globalPosition, double newFitness) {
-		if (newFitness >= globalBestFitness) {
-			lastCommunicationTimestep = timestep;
+	public void serverUpdateSolution(double[] globalPosition, double newFitness, int lastCommunicationOffset) {
+		if (newFitness >= globalBestFitness && lastCommunicationOffset <= timestep - lastCommunicationTimestep) {
+			lastCommunicationTimestep = timestep - lastCommunicationOffset;
 			if (newFitness > globalBestFitness) {
 				globalBestFitness = newFitness;
 				for (int i = 0; i < globalPosition.length; i++)

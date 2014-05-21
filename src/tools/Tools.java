@@ -64,4 +64,17 @@ public class Tools {
 		}
 	}
 	
+	public static String stringOf(double[] vector) {
+		String str = "[";
+		for (int i = 0; i < vector.length; i++)
+			str += vector[i]+",";
+		str = str.substring(0,str.length() - 1);
+		str += "]";
+		return str;
+	}
+	
+	public static void print(double[] vector) {
+		System.out.println(stringOf(vector));
+	}
+	
 }

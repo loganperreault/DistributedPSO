@@ -28,7 +28,7 @@ public class FitnessTarget extends Fitness {
 		double intensity = 0.0;
 		for (Target target : targets) {
 			double distance = Tools.euclidean(particle.position, target.position());
-			intensity += target.getIntensity() / Math.pow(distance, 2);
+			intensity += Math.min(target.getIntensity(), target.getIntensity() / Math.pow(distance, 2));
 		}
 		if (intensity < threshold)
 			intensity = 0;

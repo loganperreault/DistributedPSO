@@ -14,7 +14,7 @@ public class Server {
 	
 	public Color color = Color.GREEN;
 	public int x, y;
-	double communicationRange = 50;
+	public double communicationRange = 25;
 	List<PSO> swarms;
 	double solutionFitness;
 	double[] solutionPosition;
@@ -31,7 +31,7 @@ public class Server {
 	
 	public void runIteration() {
 		degradeSolution();
-		broadcastPosition();
+		broadcastServerPosition();
 		broadcastSolution();
 	}
 	
@@ -58,13 +58,13 @@ public class Server {
 			for (Particle particle : swarm.particles) {
 				double distance = Tools.euclidean(particle.position(), this.position());
 				if (distance < communicationRange)	{
-					particle.serverUpdateSolution(solutionPosition, solutionFitness);
+					particle.serverUpdateSolution(solutionPosition, solutionFitness, 0);
 				}
 			}
 		}
 	}
 	
-	public void broadcastPosition() {
+	public void broadcastServerPosition() {
 		for (PSO swarm : swarms) {
 			for (Particle particle : swarm.particles) {
 				double distance = Tools.euclidean(particle.position(), this.position());

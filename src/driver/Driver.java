@@ -19,7 +19,9 @@ public class Driver {
 	static double roomSize = 100;
 	static double maxSpeed = 1.0;
 	static double degradeFactor = 0.95;
-	static boolean mobile = true;
+	static boolean mobile = false;
+	static boolean animate = true;
+	static boolean anneal = false;
 	
 	/**
 	 * @param args
@@ -32,6 +34,98 @@ public class Driver {
 		
 		// NOTE: generated a figure using serverRange = 50, particleRange = 15, targets 1 and 2, focused on first particle, stopped a t = 128
 		
+		manualTest();
+		
+		Evaluation eval;
+		//eval.setTimesteps(128);
+		
+		int timesteps = 1000;
+		int epochs = 100;
+		
+		String avgSolutionValue = "";
+		String avgCommunicationError = "";
+		double[] solutionValue = new double[timesteps];
+		double[] communicationError = new double[timesteps];
+		for (int i = 0; i < epochs; i++) {
+			System.out.println("EPOCH: "+i);
+			Room room = getRandomRoom();
+			if (i == 1)
+				room.animate(false);
+			eval = new Evaluation(room);
+			eval.test(timesteps);
+			avgSolutionValue += eval.getAverageSolutionValue()+"\t";
+			avgCommunicationError += eval.getAverageCommunicationError()+"\t";
+			for (int j = 0; j < timesteps; j++) {
+				solutionValue[j] += eval.solutionValue[j];
+				communicationError[j] += eval.communicationError[j];
+			}
+		}
+		for (int i = 0; i < timesteps; i++) {
+			solutionValue[i] /= epochs;
+			communicationError[i] /= epochs;
+		}
+		String solutionValues = "";
+		String communicationErrors = "";
+		for (int i = 0; i < timesteps; i++) {
+			solutionValues += solutionValue[i]+"\t";
+			communicationErrors += communicationError[i]+"\t";
+		}
+		
+		System.out.println("AVG SOLUTION VALUE\t"+avgSolutionValue);
+		System.out.println("AVG COMMUNICATION ERROR\t"+avgCommunicationError);
+		System.out.println();
+		System.out.println("SOLUTION VALUES\t"+solutionValues);
+		System.out.println("COMMUNICATION ERRORS\t"+communicationErrors);
+	}
+	
+	private static Room getRandomRoom() {
+		Room room = new Room(roomSize);
+		
+		// create server object
+		Server server = new Server(Tools.random.nextInt((int) roomSize), Tools.random.nextInt((int) roomSize));
+		
+		// add targets
+		int numTargets = Tools.random.nextInt(2) + 1;
+		List<Target> targets = new ArrayList<>(numTargets);
+		for (int i = 0; i < numTargets; i++) {
+			Target target = new Target(Tools.random.nextInt((int) roomSize), Tools.random.nextInt((int) roomSize));
+			while (Tools.euclidean(server.position(), target.position()) < server.communicationRange) {
+				target = new Target(Tools.random.nextInt((int) roomSize), Tools.random.nextInt((int) roomSize));
+			}
+			targets.add(target);
+		}
+		
+		// Use mobile targets instead
+		if (mobile) {
+			for (Target target : targets)
+				target.setVelocity(Tools.getRandomDouble(-0.1, 0.1), Tools.getRandomDouble(-0.1, 0.1));
+			if (anneal)
+				server.setDegradeFactor(degradeFactor);
+		}
+		
+		// add noise
+		int numNoise = Tools.random.nextInt(100);
+		List<Target> noise = getRandomTargets(numNoise, 0, 1);
+		for (Target t : noise)
+			targets.add(t);
+		
+		Fitness fitnessEvaluation = new FitnessTarget(room, targets);
+		Fitness communicationEvaluation = new FitnessCommunication(room, server);
+		PSO swarm = new PSO(numRobots, 0, roomSize, maxSpeed, fitnessEvaluation, communicationEvaluation);
+		
+		if (mobile && anneal)
+			swarm.setDegradeFactor(degradeFactor);
+		
+		server.addSwarm(swarm);
+		
+		room.addSwarm(swarm);
+		room.addTargets(targets);
+		room.addServer(server);
+		
+		return room;
+	}
+	
+	private static void manualTest() {
 		List<Target> targets = getTargets();
 		
 		// add noise
@@ -50,7 +144,7 @@ public class Driver {
 		
 		// create the problem area
 		Room room = new Room(roomSize);
-		room.animate(true);
+		room.animate(animate);
 		
 		Fitness fitnessEvaluation = new FitnessTarget(room, targets);
 		Fitness communicationEvaluation = new FitnessCommunication(room, server);
@@ -66,11 +160,14 @@ public class Driver {
 		room.addServer(server);
 		
 		Evaluation eval = new Evaluation(room);
-		//eval.setTimesteps(128);
-		eval.test();
-		System.out.println("   VALID TIMESTEPS: "+eval.getValidTimesteps());
-		System.out.println("TIMESTEP CONVERGED: "+eval.getTimestepConverged());
-		System.out.println(" CONVERGENCE VALUE: "+eval.getConvergenceValue());
+		eval.test(1000);
+		
+		System.out.println("        VALID TIMESTEPS: "+eval.getValidTimesteps());
+		System.out.println("     TIMESTEP CONVERGED: "+eval.getTimestepConverged());
+		System.out.println("      CONVERGENCE VALUE: "+eval.getConvergenceValue());
+		System.out.println("     AVG SOLUTION VALUE: "+eval.getAverageSolutionValue());
+		System.out.println("AVG COMMUNICATION ERROR: "+eval.getAverageCommunicationError());
+		System.out.println();
 	}
 	
 	private static List<Target> getRandomTargets(int number, double minStrength, double maxStrength) {
@@ -106,7 +203,7 @@ public class Driver {
 		//target3.setIntensity(300);
 		
 		targets.add(target1);
-		targets.add(target2);
+		//targets.add(target2);
 		//targets.add(target3);
 		
 		return targets;

@@ -47,7 +47,6 @@ public class Room {
 			Particle particle = swarm.get(i);
 			Node node = new Node(Tools.toInt(particle.getPosition(0)), Tools.toInt(particle.getPosition(1)), 2, Color.BLUE);
 			node.setShape(Shape.TRIANGLE);
-			System.out.println(particle.communicationRange*2);
 			if (i == 0) {
 				node.setCircledCenter(Tools.toInt(particle.communicationRange));
 				node.setShape(Shape.TRIANGLE2);
@@ -102,8 +101,19 @@ public class Room {
 	public void runIteration() {
 		timestep++;
 		swarm.runIteration();
-		for (Target target : targets)
+		for (Target target : targets) {
 			target.runIteration();
+			double correctX = correct(target.x, 0, width);
+			double correctY = correct(target.y, 0, height);
+			if (correctX != 0) {
+				target.x += correctX;
+				target.vx *= -1;
+			}
+			if (correctY != 0) {
+				target.y += correctY;
+				target.vy *= -1;
+			}
+		}
 		for (Server server : servers)
 			server.runIteration();
 		updateArea();
@@ -112,6 +122,16 @@ public class Room {
 			try {	
 				Thread.sleep(pause);	
 			} catch (InterruptedException e) {	e.printStackTrace();	}
+		}
+	}
+	
+	public double correct(double val, double min, double max) {
+		if (val > max) {
+			return 2*(max - val);
+		} else if (val < min) {
+			return 2*(min - val);
+		} else {
+			return 0;
 		}
 	}
 	

@@ -13,16 +13,21 @@ public class Evaluation {
 	
 	Room room;
 	double targetIntensityThreshold = 1;
-	int timesteps = 1000;
+	int timesteps;
 	int invalidTimesteps = 0;
-	double[] solutionValue = new double[timesteps];
+	public double[] communicationError;
+	public double[] solutionValue;
 	double exactSolutionDistance = 1.0;
 	
 	public Evaluation(Room room) {
 		this.room = room;
 	}
 	
-	public void test() {
+	public void test(int timesteps) {
+		this.timesteps = timesteps;
+		communicationError = new double[timesteps];
+		solutionValue = new double[timesteps];
+		
 		for (int i = 0; i < timesteps; i++) {
 			room.runIteration();
 			testCommunication();
@@ -34,6 +39,10 @@ public class Evaluation {
 		return 1 - ((double)invalidTimesteps / timesteps);
 	}
 	
+	/**
+	 * Solution is considered converged if found within 1 unit accuracy
+	 * @return	The timestep in which the algorithm converged
+	 */
 	public int getTimestepConverged() {
 		int i;
 		for (i = 0; i < timesteps; i++)
@@ -68,8 +77,12 @@ public class Evaluation {
 			}
 		}
 		
-		if (actualFitness != serverFitness)
+		if (actualFitness != serverFitness) {
 			invalidTimesteps++;
+			communicationError[room.getTimestep() - 1] += Tools.euclidean(actualPosition, serverPosition);
+		} else {
+			communicationError[room.getTimestep() - 1] = 0;
+		}
 		
 	}
 	
@@ -95,6 +108,22 @@ public class Evaluation {
 	
 	public void setTimesteps(int timesteps) {
 		this.timesteps = timesteps;
+	}
+	
+	public double getAverageCommunicationError() {
+		double avg = 0;
+		for (int i = 0; i < communicationError.length; i++)
+			avg += communicationError[i];
+		avg /= communicationError.length;
+		return avg;
+	}
+	
+	public double getAverageSolutionValue() {
+		double avg = 0;
+		for (int i = 0; i < solutionValue.length; i++)
+			avg += solutionValue[i];
+		avg /= solutionValue.length;
+		return avg;
 	}
 
 }
