@@ -114,7 +114,8 @@ public class Particle {
 	
 	private void velocityUpdateExtended() {
 		// for each component in the vectors
-		double communicationWeight = (Math.pow(Math.E,(timestep - lastCommunicationTimestep)) / Math.pow(Math.E,targetCommunicationSteps));
+		//double communicationWeight = (Math.pow(Math.E,(timestep - lastCommunicationTimestep)) / Math.pow(Math.E,targetCommunicationSteps));
+		double communicationWeight = ((timestep - lastCommunicationTimestep >= targetCommunicationSteps) ? 1.0 : 0.0);
 		for (int i = 0; i < velocity.length; i++) {
 			double momentum = PSO.momentum * velocity[i];
 			double goal = goal(i);

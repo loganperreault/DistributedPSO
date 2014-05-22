@@ -7,19 +7,26 @@ import tools.Tools;
 
 public class PSO {
 	
-	protected static double momentum = 0.9;
-//	public static double cognitiveInfluence = 2.5;
-//	public static double socialInfluence = 0.1;
-	public static double cognitiveInfluence = 2.1;
-	public static double socialInfluence = 0.3;
 	Fitness fitnessEvaluation;
 	Fitness communicationEvaluation;
 	public static Particle globalBestParticle, communicationGlobalBestParticle;
 	double globalBestFitness, communicationGlobalBestFitness;
-	private int targetCommunicationSteps = 50;
-	public int communicationOffset = 10;
+	
+	protected static double momentum = 0.9;
+	public static double cognitiveInfluence = 2.1;
+	public static double socialInfluence = 0.3;
 	double degradeFactor = 1.0;
 	double fitnessThreshold = 2;
+	
+	//private int targetCommunicationSteps = 50;
+	//public int communicationOffset = 10;
+	private int targetCommunicationSteps = 50;
+	public int communicationOffset = 5;
+	
+	// 20,5 = 13.15
+	
+	// 50,10 = 7.79
+	// 50,5  = 4.22
 	
 	public List<Particle> particles = new ArrayList<>();
 	int particleDimension = 2;
@@ -104,7 +111,7 @@ public class PSO {
 		}
 		
 		//System.out.println(particles.get(0).globalBestFitness+" vs "+particles.get(1).globalBestFitness+" vs "+particles.get(2).globalBestFitness);
-		System.out.println(particles.get(0).globalBestFitness+" at ("+particles.get(0).globalBestPosition[0]+","+particles.get(0).globalBestPosition[1]+")");
+		//System.out.println(particles.get(0).globalBestFitness+" at ("+particles.get(0).globalBestPosition[0]+","+particles.get(0).globalBestPosition[1]+")");
 		
 	}
 	

@@ -1,8 +1,5 @@
 package evaluation;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import problem.Room;
 import problem.Server;
 import problem.Target;
@@ -15,6 +12,7 @@ public class Evaluation {
 	double targetIntensityThreshold = 1;
 	int timesteps;
 	int invalidTimesteps = 0;
+	public double[] serverError;
 	public double[] communicationError;
 	public double[] solutionValue;
 	double exactSolutionDistance = 1.0;
@@ -27,11 +25,13 @@ public class Evaluation {
 		this.timesteps = timesteps;
 		communicationError = new double[timesteps];
 		solutionValue = new double[timesteps];
+		serverError = new double[timesteps];
 		
 		for (int i = 0; i < timesteps; i++) {
 			room.runIteration();
 			testCommunication();
 			testSolution();
+			testServerError();
 		}
 	}
 	
@@ -53,6 +53,29 @@ public class Evaluation {
 	
 	public double getConvergenceValue() {
 		return (double) getTimestepConverged() / timesteps;
+	}
+	
+	private void testServerError() {
+		
+		Target goal = room.targets.get(0);
+		for (Target t : room.targets)
+			if (t.getIntensity() > goal.getIntensity())
+				goal = t;
+		
+		double[] actualPosition = goal.position();
+		
+		double serverFitness = 0;
+		double[] serverPosition = new double[2];
+		// get server best solution
+		for (Server server : room.servers) {
+			if (server.getSolutionFitness() > serverFitness) {
+				serverFitness = server.getSolutionFitness();
+				serverPosition = server.getSolutionPosition();
+			}
+		}
+		
+		serverError[room.getTimestep() - 1] += Tools.euclidean(actualPosition, serverPosition);
+		
 	}
 	
 	private void testCommunication() {

@@ -19,8 +19,8 @@ public class Driver {
 	static double roomSize = 100;
 	static double maxSpeed = 1.0;
 	static double degradeFactor = 0.95;
-	static boolean mobile = false;
-	static boolean animate = true;
+	static boolean mobile = true;
+	static boolean animate = false;
 	static boolean anneal = false;
 	
 	/**
@@ -34,18 +34,21 @@ public class Driver {
 		
 		// NOTE: generated a figure using serverRange = 50, particleRange = 15, targets 1 and 2, focused on first particle, stopped a t = 128
 		
-		manualTest();
+		//manualTest();
 		
 		Evaluation eval;
 		//eval.setTimesteps(128);
 		
-		int timesteps = 1000;
-		int epochs = 100;
+		int timesteps = 2000;
+		int epochs = 1000;
 		
+		double avgFinalServerError = 0.0;
 		String avgSolutionValue = "";
 		String avgCommunicationError = "";
+		String finalServerError = "";
 		double[] solutionValue = new double[timesteps];
 		double[] communicationError = new double[timesteps];
+		double[] serverError = new double[timesteps];
 		for (int i = 0; i < epochs; i++) {
 			System.out.println("EPOCH: "+i);
 			Room room = getRandomRoom();
@@ -55,27 +58,42 @@ public class Driver {
 			eval.test(timesteps);
 			avgSolutionValue += eval.getAverageSolutionValue()+"\t";
 			avgCommunicationError += eval.getAverageCommunicationError()+"\t";
+			finalServerError += eval.serverError[serverError.length-1]+"\t";
+			avgFinalServerError += eval.serverError[serverError.length-1];
 			for (int j = 0; j < timesteps; j++) {
 				solutionValue[j] += eval.solutionValue[j];
 				communicationError[j] += eval.communicationError[j];
+				serverError[j] += eval.serverError[j];
 			}
 		}
+		avgFinalServerError /= epochs;
 		for (int i = 0; i < timesteps; i++) {
 			solutionValue[i] /= epochs;
 			communicationError[i] /= epochs;
+			serverError[i] /= epochs;
 		}
 		String solutionValues = "";
 		String communicationErrors = "";
+		String serverErrors = "";
 		for (int i = 0; i < timesteps; i++) {
 			solutionValues += solutionValue[i]+"\t";
 			communicationErrors += communicationError[i]+"\t";
+			serverErrors += serverError[i]+"\t";
 		}
 		
+		/*
 		System.out.println("AVG SOLUTION VALUE\t"+avgSolutionValue);
 		System.out.println("AVG COMMUNICATION ERROR\t"+avgCommunicationError);
 		System.out.println();
 		System.out.println("SOLUTION VALUES\t"+solutionValues);
 		System.out.println("COMMUNICATION ERRORS\t"+communicationErrors);
+		*/
+		
+		System.out.println("SERVER ERRORS\t"+finalServerError);
+		System.out.println("TIME - SERIES\t"+serverErrors);
+		System.out.println("AVERAGE ERROR: "+avgFinalServerError);
+		
+		
 	}
 	
 	private static Room getRandomRoom() {
@@ -85,7 +103,8 @@ public class Driver {
 		Server server = new Server(Tools.random.nextInt((int) roomSize), Tools.random.nextInt((int) roomSize));
 		
 		// add targets
-		int numTargets = Tools.random.nextInt(2) + 1;
+		//int numTargets = Tools.random.nextInt(2) + 1;
+		int numTargets = 1;
 		List<Target> targets = new ArrayList<>(numTargets);
 		for (int i = 0; i < numTargets; i++) {
 			Target target = new Target(Tools.random.nextInt((int) roomSize), Tools.random.nextInt((int) roomSize));
