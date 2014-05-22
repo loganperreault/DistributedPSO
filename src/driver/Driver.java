@@ -19,7 +19,7 @@ public class Driver {
 	static double roomSize = 100;
 	static double maxSpeed = 1.0;
 	static double degradeFactor = 0.95;
-	static boolean mobile = true;
+	static boolean mobile = false;
 	static boolean animate = false;
 	static boolean anneal = false;
 	
@@ -49,6 +49,7 @@ public class Driver {
 		double[] solutionValue = new double[timesteps];
 		double[] communicationError = new double[timesteps];
 		double[] serverError = new double[timesteps];
+		double[] serverErrorExample = new double[timesteps];
 		for (int i = 0; i < epochs; i++) {
 			System.out.println("EPOCH: "+i);
 			Room room = getRandomRoom();
@@ -64,6 +65,8 @@ public class Driver {
 				solutionValue[j] += eval.solutionValue[j];
 				communicationError[j] += eval.communicationError[j];
 				serverError[j] += eval.serverError[j];
+				if (i==0)
+					serverErrorExample[j] = eval.serverError[j];
 			}
 		}
 		avgFinalServerError /= epochs;
@@ -75,10 +78,12 @@ public class Driver {
 		String solutionValues = "";
 		String communicationErrors = "";
 		String serverErrors = "";
+		String serverErrorExamples = "";
 		for (int i = 0; i < timesteps; i++) {
 			solutionValues += solutionValue[i]+"\t";
 			communicationErrors += communicationError[i]+"\t";
 			serverErrors += serverError[i]+"\t";
+			serverErrorExamples += serverErrorExample[i]+"\t";
 		}
 		
 		/*
@@ -90,8 +95,9 @@ public class Driver {
 		*/
 		
 		System.out.println("SERVER ERRORS\t"+finalServerError);
-		System.out.println("TIME - SERIES\t"+serverErrors);
-		System.out.println("AVERAGE ERROR: "+avgFinalServerError);
+		System.out.println("AVERAGE ERROR\t"+avgFinalServerError);
+		System.out.println("TIME SERIES AGGREGATE\t"+serverErrors);
+		System.out.println("TIME SERIES SINGLE\t"+serverErrorExamples);
 		
 		
 	}
