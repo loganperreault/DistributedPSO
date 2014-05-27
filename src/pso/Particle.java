@@ -114,6 +114,8 @@ public class Particle {
 	
 	private void velocityUpdateExtended() {
 		// for each component in the vectors
+		// gradient = 4.3903
+		//     hard = 3.41468
 		//double communicationWeight = (Math.pow(Math.E,(timestep - lastCommunicationTimestep)) / Math.pow(Math.E,targetCommunicationSteps));
 		double communicationWeight = ((timestep - lastCommunicationTimestep >= targetCommunicationSteps) ? 1.0 : 0.0);
 		for (int i = 0; i < velocity.length; i++) {
